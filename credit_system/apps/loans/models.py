@@ -54,8 +54,8 @@ class Loan(models.Model):
 
     @property
     def current_debt(self):
-            if not self.is_active:
-                return 0
+        if not self.is_active:
+            return 0
         return self.monthly_payment * self.repayments_left
 
     def calculate_monthly_payment(self):

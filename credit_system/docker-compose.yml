@@ -19,10 +19,8 @@ services:
 
   web:
     build: .
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py loaddata_async &&
-             python manage.py runserver 0.0.0.0:8000"
+    entrypoint: ["/app/entrypoint.sh"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
     volumes:
       - .:/app
     ports:
@@ -37,7 +35,8 @@ services:
 
   celery:
     build: .
-    command: celery -A credit_system worker --loglevel=info
+    entrypoint: ["/app/entrypoint.sh"]
+    command: ["celery", "-A", "credit_system", "worker", "--loglevel=info"]
     volumes:
       - .:/app
     depends_on:
