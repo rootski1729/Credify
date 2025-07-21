@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -21,10 +20,6 @@ from .serializers import (
 
 @api_view(['POST'])
 def check_loan_eligibility(request):
-    """
-    Check loan eligibility based on credit score
-    POST /check-eligibility
-    """
     try:
         serializer = LoanEligibilityRequestSerializer(data=request.data)
         
@@ -39,7 +34,6 @@ def check_loan_eligibility(request):
         interest_rate = serializer.validated_data['interest_rate']
         tenure = serializer.validated_data['tenure']
         
-        # Check if customer exists
         try:
             customer = Customer.objects.get(customer_id=customer_id)
         except Customer.DoesNotExist:
@@ -48,7 +42,6 @@ def check_loan_eligibility(request):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Initialize credit scoring system
         credit_scorer = CreditScoring(customer_id)
         eligibility = credit_scorer.check_eligibility(loan_amount, interest_rate, tenure)
         
@@ -79,10 +72,6 @@ def check_loan_eligibility(request):
 
 @api_view(['POST'])
 def create_loan(request):
-    """
-    Process a new loan based on eligibility
-    POST /create-loan
-    """
     try:
         serializer = LoanCreateRequestSerializer(data=request.data)
         
@@ -97,7 +86,6 @@ def create_loan(request):
         interest_rate = serializer.validated_data['interest_rate']
         tenure = serializer.validated_data['tenure']
         
-        # Check if customer exists
         try:
             customer = Customer.objects.get(customer_id=customer_id)
         except Customer.DoesNotExist:
@@ -106,7 +94,6 @@ def create_loan(request):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Check eligibility first
         credit_scorer = CreditScoring(customer_id)
         eligibility = credit_scorer.check_eligibility(loan_amount, interest_rate, tenure)
         
@@ -119,7 +106,6 @@ def create_loan(request):
                 'monthly_installment': round(float(eligibility['monthly_installment']), 2)
             }
         else:
-            # Create the loan
             loan = Loan.objects.create(
                 customer=customer,
                 loan_amount=loan_amount,
@@ -155,10 +141,6 @@ def create_loan(request):
 
 @api_view(['GET'])
 def view_loan_details(request, loan_id):
-    """
-    View loan details and customer details
-    GET /view-loan/<loan_id>
-    """
     try:
         loan = get_object_or_404(Loan, loan_id=loan_id)
         serializer = LoanDetailSerializer(loan)
@@ -173,17 +155,9 @@ def view_loan_details(request, loan_id):
 
 @api_view(['GET'])
 def view_customer_loans(request, customer_id):
-    """
-    View all current loan details by customer id
-    GET /view-loans/<customer_id>
-    """
     try:
-        # Check if customer exists
         customer = get_object_or_404(Customer, customer_id=customer_id)
-        
-        # Get all active loans for the customer
         loans = Loan.objects.filter(customer=customer)
-        
         serializer = LoanListSerializer(loans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         

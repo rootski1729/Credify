@@ -7,9 +7,7 @@ from django.db import IntegrityError
 from .models import Customer
 from .serializers import (
     CustomerRegistrationSerializer, 
-    CustomerRegistrationResponseSerializer
-)
-
+    CustomerRegistrationResponseSerializer)
 
 @api_view(['POST'])
 def register_customer(request):
@@ -23,7 +21,6 @@ def register_customer(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Check if customer with phone number already exists
         phone_number = serializer.validated_data['phone_number']
         if Customer.objects.filter(phone_number=phone_number).exists():
             return Response(
@@ -31,10 +28,8 @@ def register_customer(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Create customer
         customer = Customer.objects.create(**serializer.validated_data)
         
-        # Return response
         response_serializer = CustomerRegistrationResponseSerializer(customer)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         
